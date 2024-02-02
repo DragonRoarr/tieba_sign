@@ -51,9 +51,8 @@ class Tieba(object):
             f.close()
 
     def load_cookie(self, user):
-        with open('.%s' % user, 'r') as f:
-            cookie_dict = json.loads(f.read())
-            f.close()
+        #with open('.%s' % user, 'r') as f:
+        cookie_dict = json.loads(jsonFile)#secret获取
         for k, v in cookie_dict.items():
             self.s.cookies.set(k, v)
             
@@ -287,18 +286,18 @@ class Tieba(object):
         start_time = time.time()
         for user in self.users:
             print(f'当前登陆: {user}')
-            if os.path.exists('.%s' % user):
-                self.load_cookie(user)
-                if self.check_login():
-                    print('CookieLogin: True')
-                    tiebas = self.get_like_tiebas()
-                    self.ALL_TIEBA_LIST.extend(tiebas)
-                    self.start(tiebas)
-                else:
-                    print('%sCookies失效...正在重新登录...' % user)
-                    self.login(user)
+            #if os.path.exists('.%s' % user):
+            self.load_cookie(user)
+            if self.check_login():
+                print('CookieLogin: True')
+                tiebas = self.get_like_tiebas()
+                self.ALL_TIEBA_LIST.extend(tiebas)
+                self.start(tiebas)
             else:
-                self.login(user)
+                print('%sCookies失效...正在重新登录...' % user)
+                # self.login(user)
+            # else:
+            #     self.login(user)
             self.tb.align = 'l'
             print(self.tb)
             self.tb.clear_rows()
@@ -311,6 +310,6 @@ class Tieba(object):
             )
  
 if __name__ == "__main__":
-    user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四']
+    #user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四'] 从secret上传
     tieba = Tieba(user_lists)
     tieba.main()
