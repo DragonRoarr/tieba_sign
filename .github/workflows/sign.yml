@@ -33,5 +33,5 @@ jobs:
         python tieba_sign.py
     env:
         jsonFile: ${{ secrets.JSONFILE }}
-        user_lists: ${{ secrets.USER_LISTS }}
+
         
