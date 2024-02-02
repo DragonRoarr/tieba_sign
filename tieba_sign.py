@@ -4,21 +4,14 @@
 import hashlib
 import json
 import os
-#import prettytable as pt
-#import pyzbar.pyzbar as pyzbar
 import requests
 import time
-from io import BytesIO
-#from PIL import Image
-from random import choice
 from threading import Thread
-user_lists = os.environ.get("user_lists")
-jsonFile=os.environ.get("jsonFile")
 
+jsonFile=os.environ.get("jsonFile")
 class Tieba(object):
-    def __init__(self, users):
-        self.users = users
-        #self.tb = pt.PrettyTable()
+    def __init__(self,):
+
         self.s = requests.session()
 
         self.MD5_KEY = 'tiebaclient!!!'
@@ -36,8 +29,6 @@ class Tieba(object):
         self.MY_LIKE_URL = 'http://tieba.baidu.com/f/like/mylike'
 
         self.ALL_TIEBA_LIST = []
-
-        #self.tb.field_names = ['贴吧', '状态']
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'c.tieba.baidu.com',
@@ -47,123 +38,10 @@ class Tieba(object):
     def get_time_stamp(self):
         return str(int(time.time() * 1000))
 
-    def save_cookie(self, user):
-        cookie_dict = self.s.cookies.get_dict()
-        with open('.%s' % user, 'w') as f:
-            json.dump(cookie_dict, f)
-            f.close()
-
-    def load_cookie(self, user):
-        #with open('.%s' % user, 'r') as f:
+    def load_cookie(self):
         cookie_dict = json.loads(jsonFile)#secret获取
         for k, v in cookie_dict.items():
-            self.s.cookies.set(k, v)
-            
-    def unicast(self, channel_id):
-        tt = self.get_time_stamp()
-        r = self.s.get(
-            url = self.UNICAST_URL,
-            params = {
-                'channel_id': channel_id,
-                'tpl': 'tb',
-                'apiver': 'v3',
-                'callback': '',
-                'tt': tt,
-                '_': tt
-            }
-        )
-        rsp = r.text.replace('(','').replace(')','')
-        rsp_json = json.loads(rsp)
-        try:
-            channel_v = json.loads(rsp_json['channel_v'])
-            return channel_v
-        except:
-            pass
-            #print('扫描超时')
-
-    def qr_login_set_cookie(self, bduss):
-        tt = self.get_time_stamp()
-        r = self.s.get(
-            url = self.QR_LOGIN_URL,
-            params = {
-                'v': tt,
-                'bduss': bduss,
-                'u': self.INDEX_URL,
-                'loginVersion': 'v4',
-                'qrcode': '1',
-                'tpl': 'tb',
-                'apiver': 'v3',
-                'tt': tt,
-                'alg': 'v1',
-                'time': tt[10:]
-            }
-        )
-        rsp = json.loads(r.text.replace("'",'"').replace('\\', '\\\\'))
-        bdu = rsp['data']['hao123Param']
-        self.s.get(f'{self.HAO123_URL}?bdu={bdu}&t={tt}')
-        self.s.get(self.MY_LIKE_URL)
-
-    def down_qr_code(self, imgurl):
-        r = self.s.get(f'https://{imgurl}')
-        with open('qrcode.png', 'wb') as f:
-            f.write(r.content)
-            f.close()
-
-    def read_qr_code(self, imgurl):
-        self.down_qr_code(imgurl)
-        img = Image.open('qrcode.png')
-        barcodes = pyzbar.decode(img)
-        for barcode in barcodes:
-            barcodeData = barcode.data.decode("utf-8")
-            return barcodeData
-
-    def get_qr_code(self):
-        tt = self.get_time_stamp()
-        r = self.s.get(
-            url = self.QR_CODE_URL,
-            params = {
-                'lp': 'pc',
-                'qrloginfrom': 'pc',
-                'apiver': 'v3',
-                'tt': tt,
-                'tpl': 'tb',
-                '_': tt
-            }
-        )
-        app = input('有百度贴吧APP / 百度APP，请输入 1 ，没有请输入 2\n：')
-        imgurl = r.json()['imgurl']
-        while True:
-            if app == '1':
-                print(f'请使用浏览器打开二维码链接并使用百度贴吧APP / 百度APP扫描：https://{imgurl}')
-                print('注意：请使用IE浏览器打开二维码链接！！！')
-                break
-            elif app == '2':
-                qrurl = self.read_qr_code(imgurl)
-                os.remove('./qrcode.png')
-                print(f'请使用已经登录了百度贴吧网页端的浏览器打开链接并按照提示完成登陆：{qrurl}')
-                break
-        channel_id = r.json()['sign']
-        return channel_id
-
-    def qr_login(self, user):
-        channel_id = self.get_qr_code()
-        while True:
-            rsp = self.unicast(channel_id)
-            if rsp and rsp['status'] == 1: print('扫描成功,请在手机端确认登录!')
-            if rsp and rsp['status'] == 0:
-                print('确认登陆成功')
-                bduss = rsp['v']
-                self.qr_login_set_cookie(bduss)
-                self.save_cookie(user)
-                break
-
-    def login(self, user):
-        self.s.cookies.clear()
-        self.qr_login(user)
-        print('Login: True')
-        tiebas = self.get_like_tiebas()
-        self.ALL_TIEBA_LIST.extend(tiebas)
-        self.start(tiebas)
+            self.s.cookies.set(k, v)       
 
     def check_login(self):
         r = self.s.get(self.TBS_URL)
@@ -210,32 +88,6 @@ class Tieba(object):
         r = self.s.get(self.TBS_URL).json()
         return r['tbs']
 
-    def recognize_captcha(self, remote_url, rec_times=3):
-        for _ in range(rec_times):
-            while True:
-                try:
-                    response = requests.get(remote_url, timeout=6)
-                    if response.text:
-                        break
-                    else:
-                        print("retry, response.text is empty")
-                except Exception as ee:
-                    print(ee)
-
-            files = {'image_file': ('captcha.jpg', BytesIO(response.content), 'application')}
-            r = requests.post(self.CAPTCHA_API, files=files)
-            try:
-                predict_text = json.loads(r.text)["value"]
-                return predict_text
-            except:
-                continue
-
-    def sign_with_vcode(self, tieba, tbs, captcha_input_str, captcha_vcode_str):
-        """
-        由于暂时没碰见需要验证码的情况,
-        故此处只是print
-        """
-        print(f'{tieba} 需要验证码')
 
     def sign(self, tieba):
         tbs = self.get_tbs()
@@ -262,19 +114,6 @@ class Tieba(object):
                 break
             except:
                 continue
-        # try:
-        #     if rsp['user_info']['is_sign_in'] == 1:
-        #         pass
-        #         #self.tb.add_row([tieba, '签到成功'])
-        # except:
-        #     if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
-        #         captcha_vcode_str = rsp['data']['captcha_vcode_str']
-        #         captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
-        #         captcha_input_str = self.recognize_captcha(captcha_url)
-        #         self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
-        #     else:
-        #         pass
-        #         #self.tb.add_row([tieba, rsp['error_msg']])
 
     def start(self, tiebas):
         threads = []
@@ -290,33 +129,25 @@ class Tieba(object):
 
     def main(self):
         start_time = time.time()
-        for user in self.users:
-            #if os.path.exists('.%s' % user):
-            self.load_cookie(user)
-            if self.check_login():
-                print('CookieLogin: True')
-                tiebas = self.get_like_tiebas()
-                self.ALL_TIEBA_LIST.extend(tiebas)
-                self.start(tiebas)
-            else:
-                print("failed login")
-                #print('%sCookies失效...正在重新登录...' % user)
-                # self.login(user)
-            # else:
-            #     self.login(user)
-            # self.tb.align = 'l'
-            # print('a bar')
-            # self.tb.clear_rows()
+        
+        self.load_cookie()
+        if self.check_login():
+            print('CookieLogin: True')
+            tiebas = self.get_like_tiebas()
+            self.ALL_TIEBA_LIST.extend(tiebas)
+            self.start(tiebas)
         else:
-            end_time = time.time()
-            print('total{}bars,spend{}seconds'.format(
-                len(self.ALL_TIEBA_LIST),
-                int(end_time - start_time)
-                )
+            print("failed login")
+
+        
+        end_time = time.time()
+        print('total{}bars,spend{}seconds'.format(
+            len(self.ALL_TIEBA_LIST),
+            int(end_time - start_time)
             )
+        )
  
 if __name__ == "__main__":
-    #user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四'] 从secret上传
-    tieba = Tieba(user_lists)
 
+    tieba = Tieba()
     tieba.main()
