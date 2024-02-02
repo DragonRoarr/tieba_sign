@@ -4,11 +4,11 @@ import hashlib
 import json
 import os
 import prettytable as pt
-import pyzbar.pyzbar as pyzbar
+#import pyzbar.pyzbar as pyzbar
 import requests
 import time
 from io import BytesIO
-from PIL import Image
+#from PIL import Image
 from random import choice
 from threading import Thread
 user_lists = os.environ.get("user_lists")
@@ -286,7 +286,7 @@ class Tieba(object):
     def main(self):
         start_time = time.time()
         for user in self.users:
-            print(f'当前登陆: {user}')
+            print(user)
             #if os.path.exists('.%s' % user):
             self.load_cookie(user)
             if self.check_login():
@@ -295,7 +295,7 @@ class Tieba(object):
                 self.ALL_TIEBA_LIST.extend(tiebas)
                 self.start(tiebas)
             else:
-                print('%sCookies失效...正在重新登录...' % user)
+                #print('%sCookies失效...正在重新登录...' % user)
                 # self.login(user)
             # else:
             #     self.login(user)
