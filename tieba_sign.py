@@ -313,4 +313,5 @@ class Tieba(object):
 if __name__ == "__main__":
     #user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四'] 从secret上传
     tieba = Tieba(user_lists)
+    print("测试")
     tieba.main()
