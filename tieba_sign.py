@@ -11,7 +11,8 @@ from io import BytesIO
 from PIL import Image
 from random import choice
 from threading import Thread
-
+user_lists = os.environ.get("user_lists")
+jsonFile=os.environ.get("jsonFile")
 class Tieba(object):
     def __init__(self, users):
         self.users = users
