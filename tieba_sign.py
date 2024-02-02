@@ -78,7 +78,8 @@ class Tieba(object):
             channel_v = json.loads(rsp_json['channel_v'])
             return channel_v
         except:
-            print('扫描超时')
+            pass
+            #print('扫描超时')
 
     def qr_login_set_cookie(self, bduss):
         tt = self.get_time_stamp()
@@ -288,7 +289,6 @@ class Tieba(object):
     def main(self):
         start_time = time.time()
         for user in self.users:
-            print(user)
             #if os.path.exists('.%s' % user):
             self.load_cookie(user)
             if self.check_login():
@@ -303,11 +303,11 @@ class Tieba(object):
             # else:
             #     self.login(user)
             self.tb.align = 'l'
-            print(self.tb)
+            print('a bar')
             self.tb.clear_rows()
         else:
             end_time = time.time()
-            print('总共签到{}个贴吧,耗时:{}秒'.format(
+            print('total{}bars,spend{}seconds'.format(
                 len(self.ALL_TIEBA_LIST),
                 int(end_time - start_time)
                 )
