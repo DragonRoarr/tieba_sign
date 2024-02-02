@@ -13,6 +13,7 @@ from random import choice
 from threading import Thread
 user_lists = os.environ.get("user_lists")
 jsonFile=os.environ.get("jsonFile")
+
 class Tieba(object):
     def __init__(self, users):
         self.users = users
@@ -295,6 +296,7 @@ class Tieba(object):
                 self.ALL_TIEBA_LIST.extend(tiebas)
                 self.start(tiebas)
             else:
+                pass
                 #print('%sCookies失效...正在重新登录...' % user)
                 # self.login(user)
             # else:
@@ -313,5 +315,5 @@ class Tieba(object):
 if __name__ == "__main__":
     #user_lists = [''] # 贴吧用户名列表，例如 ['张三', '李四'] 从secret上传
     tieba = Tieba(user_lists)
-    print("测试")
+
     tieba.main()
