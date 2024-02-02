@@ -4,7 +4,7 @@
 import hashlib
 import json
 import os
-import prettytable as pt
+#import prettytable as pt
 #import pyzbar.pyzbar as pyzbar
 import requests
 import time
@@ -18,7 +18,7 @@ jsonFile=os.environ.get("jsonFile")
 class Tieba(object):
     def __init__(self, users):
         self.users = users
-        self.tb = pt.PrettyTable()
+        #self.tb = pt.PrettyTable()
         self.s = requests.session()
 
         self.MD5_KEY = 'tiebaclient!!!'
@@ -37,7 +37,7 @@ class Tieba(object):
 
         self.ALL_TIEBA_LIST = []
 
-        self.tb.field_names = ['贴吧', '状态']
+        #self.tb.field_names = ['贴吧', '状态']
         self.headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
             'Host': 'c.tieba.baidu.com',
@@ -262,17 +262,19 @@ class Tieba(object):
                 break
             except:
                 continue
-        try:
-            if rsp['user_info']['is_sign_in'] == 1:
-                self.tb.add_row([tieba, '签到成功'])
-        except:
-            if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
-                captcha_vcode_str = rsp['data']['captcha_vcode_str']
-                captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
-                captcha_input_str = self.recognize_captcha(captcha_url)
-                self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
-            else:
-                self.tb.add_row([tieba, rsp['error_msg']])
+        # try:
+        #     if rsp['user_info']['is_sign_in'] == 1:
+        #         pass
+        #         #self.tb.add_row([tieba, '签到成功'])
+        # except:
+        #     if rsp['error_msg'] == 'need vcode': # 这里也不清楚手机端需不需要验证码
+        #         captcha_vcode_str = rsp['data']['captcha_vcode_str']
+        #         captcha_url = f'{self.GEN_IMG_URL}?{captcha_vcode_str}'
+        #         captcha_input_str = self.recognize_captcha(captcha_url)
+        #         self.sign_with_vcode(tieba, tbs, captcha_input_str, captcha_vcode_str)
+        #     else:
+        #         pass
+        #         #self.tb.add_row([tieba, rsp['error_msg']])
 
     def start(self, tiebas):
         threads = []
@@ -297,14 +299,14 @@ class Tieba(object):
                 self.ALL_TIEBA_LIST.extend(tiebas)
                 self.start(tiebas)
             else:
-                pass
+                print("failed login")
                 #print('%sCookies失效...正在重新登录...' % user)
                 # self.login(user)
             # else:
             #     self.login(user)
-            self.tb.align = 'l'
-            print('a bar')
-            self.tb.clear_rows()
+            # self.tb.align = 'l'
+            # print('a bar')
+            # self.tb.clear_rows()
         else:
             end_time = time.time()
             print('total{}bars,spend{}seconds'.format(
